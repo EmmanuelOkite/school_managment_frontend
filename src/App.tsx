@@ -1,10 +1,5 @@
-function App() {
-  return (
-    <div>
-      <h1>School Management System</h1>
-      <p>Frontend is working 🚀</p>
-    </div>
-  );
-}
+import Dashboard from './dashboard/Dashboard';
 
-export default App;
+export default function App() {
+  return <Dashboard />;
+}
