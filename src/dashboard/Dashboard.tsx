@@ -85,7 +85,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     children: ["Class Timetable", "Teacher Timetable", "Exam Timetable"],
   },
   {
-    icon: <DollarSign size={16} />, label: "Finance", key: "finance", badge: "New",
+    icon: <DollarSign size={16} />, label: "Finance", key: "finance",
     children: ["Fee Structures", "Fee Collection", "Student Balances", "Expenses", "Financial Reports"],
   },
   {
@@ -101,7 +101,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     children: ["Medical Records", "Sick Bay Visits", "Health Reports"],
   },
   {
-    icon: <Megaphone size={16} />, label: "Communication", key: "communication", badge: "12",
+    icon: <Megaphone size={16} />, label: "Communication", key: "communication",
     children: ["Announcements", "SMS Notifications", "Email Notifications", "Notice Board"],
   },
   {
