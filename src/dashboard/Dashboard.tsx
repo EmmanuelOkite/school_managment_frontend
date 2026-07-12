@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, GraduationCap, Users, UserCheck, School,
   CalendarCheck, FileText, BookOpen, DollarSign, Library,
@@ -122,6 +123,25 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
 ];
 
+// Maps sidebar child labels to their routes
+const ROUTES: Record<string, string> = {
+  "Add Student": "/students/add",
+  "Manage Students": "/students",
+  "Add Teacher": "/teachers/add",
+  "Manage Teachers": "/teachers",
+  "Add Parent": "/parents/add",
+  "Manage Parents": "/parents",
+  "Create Exams": "/exams/create",
+  "Fee Structures": "/finance/fee-structures",
+  "Fee Collection": "/finance/fee-collection",
+  "Student Balances": "/finance/student-balances",
+  "Expenses": "/finance/expenses",
+  "Financial Reports": "/finance/reports",
+  "Class Timetable": "/timetable/class",
+  "Teacher Timetable": "/timetable/teacher",
+  "Exam Timetable": "/timetable/exam",
+};
+
 const statCards: StatCard[] = [
   { label: "Total Students", value: "1,248", change: "+12.5% vs last month", up: true, icon: "👨‍🎓", color: "#3b82f6" },
   { label: "Staff Members", value: "94", change: "+3.1% vs last month", up: true, icon: "👨‍🏫", color: "#10b981" },
@@ -226,8 +246,16 @@ export default function Dashboard() {
   const [openKeys, setOpenKeys] = useState<Record<string, boolean>>({ dashboard: true });
   const [activeItem, setActiveItem] = useState<string>("Overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const toggle = (key: string) => setOpenKeys((prev: Record<string, boolean>) => ({ ...prev, [key]: !prev[key] }));
+
+  const handleChildClick = (child: string) => {
+    setActiveItem(child);
+    if (ROUTES[child]) {
+      navigate(ROUTES[child]);
+    }
+  };
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#f8fafc", color: "#0f172a", overflow: "hidden" }}>
@@ -283,7 +311,9 @@ export default function Dashboard() {
               {!sidebarCollapsed && openKeys[item.key] && (
                 <div style={{ background: "#080f1a" }}>
                   {item.children.map((child: string) => (
-                    <button key={child} onClick={() => setActiveItem(child)}
+                    <button
+                      key={child}
+                      onClick={() => handleChildClick(child)}
                       style={{
                         width: "100%", display: "block", textAlign: "left",
                         padding: "7px 16px 7px 46px", background: "none", border: "none",
@@ -386,11 +416,14 @@ export default function Dashboard() {
             <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 600, color: "#64748b", letterSpacing: "0.06em", textTransform: "uppercase" }}>Quick Actions</p>
             <div style={{ display: "flex", gap: 12 }}>
               {quickActions.map((a: QuickAction) => (
-                <button key={a.label} style={{
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                  padding: "12px 20px", borderRadius: 10, border: "1px solid #e2e8f0",
-                  background: "#f8fafc", cursor: "pointer", fontSize: 12, color: "#334155", fontWeight: 500,
-                }}>
+                <button
+                  key={a.label}
+                  onClick={() => { if (a.label === "Enroll Student") navigate("/students/add"); }}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                    padding: "12px 20px", borderRadius: 10, border: "1px solid #e2e8f0",
+                    background: "#f8fafc", cursor: "pointer", fontSize: 12, color: "#334155", fontWeight: 500,
+                  }}>
                   <span style={{ fontSize: 20 }}>{a.icon}</span>
                   {a.label}
                 </button>
@@ -437,7 +470,11 @@ export default function Dashboard() {
             <div style={{ background: "#fff", borderRadius: 12, padding: "20px", border: "1px solid #e2e8f0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: "#0f172a" }}>Examinations Overview</p>
-                <button style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", padding: "6px 14px", borderRadius: 7, fontSize: 12, fontWeight: 600, color: "#334155", cursor: "pointer" }}>Manage Exams</button>
+                <button
+                  onClick={() => navigate("/exams/create")}
+                  style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", padding: "6px 14px", borderRadius: 7, fontSize: 12, fontWeight: 600, color: "#334155", cursor: "pointer" }}>
+                  Manage Exams
+                </button>
               </div>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
@@ -483,7 +520,11 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
-              <button style={{ width: "100%", marginTop: 16, background: "none", border: "none", color: "#3b82f6", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>View Full Timetable →</button>
+              <button
+                onClick={() => navigate("/timetable/class")}
+                style={{ width: "100%", marginTop: 16, background: "none", border: "none", color: "#3b82f6", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>
+                View Full Timetable →
+              </button>
             </div>
           </div>
 

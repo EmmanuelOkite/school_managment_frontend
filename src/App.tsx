@@ -1,5 +1,14 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Dashboard from './dashboard/Dashboard';
+import AddStudent from './student/AddStudent';
 
 export default function App() {
-  return <Dashboard />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/students/add" element={<AddStudent />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
