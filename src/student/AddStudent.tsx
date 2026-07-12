@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { studentService } from '../api/studentService';
 import {
   User, Hash, GraduationCap, Search, Globe, Calendar,
   ChevronDown, X, RotateCcw, Info, AlertCircle,
@@ -311,12 +312,32 @@ export default function AddStudent() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSave = () => {
-    if (validate()) {
-      console.log("Form data:", form);
-      alert("Student profile ready to submit!");
+  const handleSave = async () => {
+  if (validate()) {
+    try {
+      await studentService.create({
+        studentId: form.studentId,
+        surname: form.surname,
+        firstName: form.firstName,
+        otherNames: form.otherNames,
+        class: form.classId,
+        level: form.level,
+        subjectCombination: form.subjectCombination.join(", "),
+        age: Number(form.age),
+        gender: form.gender,
+        nationality: form.nationality,
+        dateOfBirth: form.dateOfBirth,
+      });
+
+      alert("Student saved successfully!");
+
+      // Optional: Reset the form after successful save
+      handleReset();
+    } catch (error: any) {
+      alert(error.response?.data?.message ?? "Failed to save student.");
     }
-  };
+  }
+};
 
   const handleReset = () => {
     setForm({ studentId: "S-2026-000123", level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "" });
