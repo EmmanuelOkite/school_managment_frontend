@@ -384,7 +384,7 @@ export default function AddStudent() {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <Label text="Student ID" />
-                  <span style={{ fontSize: 11.5, color: "#94a3b8", fontStyle: "italic" }}>Generated Automatically</span>
+                  <span style={{ fontSize: 11.5, color: "#94a3b8", fontStyle: "italic" }}></span>
                 </div>
                 <InputField placeholder="Auto-generated" value={form.studentId} onChange={() => {}} icon={<Hash size={14} />} readOnly />
               </div>

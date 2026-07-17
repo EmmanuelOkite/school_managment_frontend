@@ -385,7 +385,7 @@ export default function Dashboard() {
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
             <div>
               <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: "#0f172a" }}>Welcome back, Admin</h1>
-              <p style={{ fontSize: 13, color: "#64748b", margin: "4px 0 0" }}>Here is a detailed look at what's happening in school today.</p>
+              <p style={{ fontSize: 13, color: "#64748b", margin: "4px 0 0" }}>Here is a detailed look at what's happening in school as of today.</p>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 13, color: "#64748b", background: "#f1f5f9", padding: "6px 12px", borderRadius: 8 }}>📅 Oct 23, 2023 – Oct 29, 2023</span>
@@ -631,7 +631,7 @@ export default function Dashboard() {
 
           {/* Footer */}
           <div style={{ marginTop: 32, textAlign: "center", fontSize: 12, color: "#94a3b8", paddingBottom: 8 }}>
-            © 2026 School Admin. All rights reserved. | School Management System
+            © 2026 School Admin. All rights reserved. | SMC
           </div>
         </main>
       </div>
