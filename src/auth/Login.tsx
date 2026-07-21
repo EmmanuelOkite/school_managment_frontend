@@ -120,9 +120,10 @@ export default function Login() {
         <div style={{ marginBottom: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <label style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>Password</label>
-            <span style={{ fontSize: 13, color: "#3b82f6", fontWeight: 600, cursor: "pointer" }}>
-              Forgot password?
-            </span>
+            <span onClick={() => navigate("/reset-password")}
+  style={{ fontSize: 13, color: "#3b82f6", fontWeight: 600, cursor: "pointer" }}>
+  Forgot password?
+</span>
           </div>
           <div style={{ position: "relative" }}>
             <Lock size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />

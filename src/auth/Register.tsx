@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import {
   GraduationCap, User, Mail, Lock, Eye, EyeOff,
   ChevronDown, CheckCircle2, UserCheck, Users, UserCog,
@@ -42,6 +43,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 }
 
 export default function Register() {
+  const navigate = useNavigate();
   const [form, setForm] = useState<FormData>({
     role: "Student", firstName: "", lastName: "",
     email: "", password: "", confirmPassword: "", agreeTerms: false,
@@ -319,7 +321,11 @@ export default function Register() {
 
         <p style={{ textAlign: "center", fontSize: 13, color: "#64748b", margin: 0 }}>
           Already have an account?{" "}
-          <span style={{ color: "#4f46e5", fontWeight: 700, cursor: "pointer" }}>Sign in</span>
+          <span
+  onClick={() => navigate("/login")}
+  style={{ color: "#4f46e5", fontWeight: 700, cursor: "pointer" }}>
+  Sign in
+</span>
         </p>
       </div>
 
