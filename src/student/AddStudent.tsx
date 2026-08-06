@@ -271,7 +271,7 @@ function ClassSearch({
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export default function AddStudent() {
+export default function AddStudent({ embedded = false }: { embedded?: boolean }) {
   const [form, setForm] = useState<FormData>({
     studentId: "S-2026-000123",
     level: "",
@@ -348,7 +348,7 @@ export default function AddStudent() {
   const isALevel = form.level === "A Level";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5f9", padding: "32px 24px", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: embedded ? undefined : "100vh", background: embedded ? "transparent" : "#f1f5f9", padding: embedded ? "20px" : "32px 24px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
 
         {/* ── Page Header ───────────────────────────────────────────────── */}

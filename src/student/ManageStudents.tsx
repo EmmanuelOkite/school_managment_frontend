@@ -95,7 +95,7 @@ function FilterSelect({
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export default function ManageStudents() {
+export default function ManageStudents({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
 
   const [students, setStudents] = useState<StudentRow[]>([]);
@@ -190,7 +190,7 @@ export default function ManageStudents() {
   }, [totalPages]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5f9", padding: "28px 28px", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: embedded ? undefined : "100vh", background: embedded ? "transparent" : "#f1f5f9", padding: embedded ? "20px" : "28px 28px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* ── Header ────────────────────────────────────────────────────── */}

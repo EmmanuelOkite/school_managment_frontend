@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, GraduationCap, Users, UserCheck, School,
   CalendarCheck, FileText, BookOpen, DollarSign, Library,
@@ -249,13 +249,14 @@ export default function Dashboard() {
   const [activeItem, setActiveItem] = useState<string>("Overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const toggle = (key: string) => setOpenKeys((prev: Record<string, boolean>) => ({ ...prev, [key]: !prev[key] }));
 
   const handleChildClick = (child: string) => {
     setActiveItem(child);
     if (ROUTES[child]) {
-      navigate(ROUTES[child]);
+      navigate(ROUTES[child], { state: { background: location } });
     }
   };
 
@@ -422,7 +423,7 @@ export default function Dashboard() {
               {quickActions.map((a: QuickAction) => (
                 <button
                   key={a.label}
-                  onClick={() => { if (a.label === "Enroll Student") navigate("/students/add"); }}
+                  onClick={() => { if (a.label === "Enroll Student") navigate("/students/add", { state: { background: location } }); }}
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
                     padding: "12px 20px", borderRadius: 10, border: "1px solid #e2e8f0",

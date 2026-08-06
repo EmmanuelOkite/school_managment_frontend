@@ -130,7 +130,7 @@ function StatBox({ label, value, color, bg }: { label: string; value: number; co
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export default function StudentAttendance() {
+export default function StudentAttendance({ embedded = false }: { embedded?: boolean }) {
   const [allStudents, setAllStudents] = useState<RosterStudent[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -235,7 +235,7 @@ export default function StudentAttendance() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5f9", padding: "28px 28px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
+    <div style={{ minHeight: embedded ? undefined : "100vh", background: embedded ? "transparent" : "#f1f5f9", padding: embedded ? "20px" : "28px 28px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* ── Header ────────────────────────────────────────────────────── */}

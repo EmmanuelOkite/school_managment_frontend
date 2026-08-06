@@ -152,7 +152,7 @@ function SelectField({
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export default function CreateAnnouncement() {
+export default function CreateAnnouncement({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
 
   const [form, setForm] = useState<FormData>({
@@ -239,7 +239,7 @@ export default function CreateAnnouncement() {
   const priorityColor = (p: string) => (p === "Urgent" ? "#ef4444" : "#0f172a");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5f9", padding: "28px 24px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
+    <div style={{ minHeight: embedded ? undefined : "100vh", background: embedded ? "transparent" : "#f1f5f9", padding: embedded ? "20px" : "28px 24px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
         {/* ── Card ──────────────────────────────────────────────────────── */}
