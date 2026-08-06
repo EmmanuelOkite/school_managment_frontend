@@ -332,16 +332,18 @@ export default function Dashboard() {
           ))}
 
           {/* Logout */}
-          <button style={{
-            width: "100%", display: "flex", alignItems: "center", gap: 10,
-            padding: "9px 16px", background: "none", border: "none", cursor: "pointer",
-            color: "#ef4444", fontSize: 13, fontWeight: 500, marginTop: 4,
-          }}>
-            <span style={{ flexShrink: 0, width: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <LogOut size={16} />
-            </span>
-            {!sidebarCollapsed && <span>Logout</span>}
-          </button>
+          <button
+  onClick={() => navigate("/login")}
+  style={{
+    width: "100%", display: "flex", alignItems: "center", gap: 10,
+    padding: "9px 16px", background: "none", border: "none", cursor: "pointer",
+    color: "#ef4444", fontSize: 13, fontWeight: 500, marginTop: 4,
+  }}>
+  <span style={{ flexShrink: 0, width: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <LogOut size={16} />
+  </span>
+  {!sidebarCollapsed && <span>Logout</span>}
+</button>
         </nav>
 
         {/* Collapse toggle */}
