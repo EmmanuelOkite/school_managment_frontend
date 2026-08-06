@@ -55,7 +55,7 @@ interface QuickAction {
 const SIDEBAR_ITEMS: SidebarItem[] = [
   {
     icon: <LayoutDashboard size={16} />, label: "Dashboard", key: "dashboard",
-    children: ["Overview", "Statistics", "Recent Activities", "Announcements"],
+    children: ["Announcements"],
   },
   {
     icon: <GraduationCap size={16} />, label: "Students", key: "students",
