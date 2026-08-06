@@ -127,6 +127,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 const ROUTES: Record<string, string> = {
   "Add Student": "/students/add",
   "Manage Students": "/students",
+  "Student Attendance": "/attendance/students",
   "Add Teacher": "/teachers/add",
   "Manage Teachers": "/teachers",
   "Add Parent": "/parents/add",
