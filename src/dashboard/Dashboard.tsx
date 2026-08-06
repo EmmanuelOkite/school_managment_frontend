@@ -59,7 +59,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <GraduationCap size={16} />, label: "Students", key: "students",
-    children: ["Add Student", "Manage Students", "Student Attendance", "Student Promotion", "Alumni"],
+    children: ["Add Student", "Manage Students", "Student Attendance",],
   },
   {
     icon: <UserCheck size={16} />, label: "Teachers", key: "teachers",
