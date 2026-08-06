@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { studentService } from '../api/studentService';
 import {
-  User, Hash, GraduationCap, Search, Globe, Calendar,
+  User, Hash, Search, Globe, Calendar,
   ChevronDown, X, RotateCcw, Info, AlertCircle,
 } from "lucide-react";
 
