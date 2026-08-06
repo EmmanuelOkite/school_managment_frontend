@@ -235,7 +235,7 @@ export default function StudentAttendance() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f1f5f9", padding: "28px 28px", fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#f1f5f9", padding: "28px 28px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* ── Header ────────────────────────────────────────────────────── */}
