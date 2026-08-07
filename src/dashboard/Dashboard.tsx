@@ -91,7 +91,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <Library size={16} />, label: "Library", key: "library",
-    children: ["Books", "Book Categories", "Borrowed Books", "Returns & Fines"],
+    children: ["Books", "Book Categories", "Borrowed Books"],
   },
   {
     icon: <Bus size={16} />, label: "Transport", key: "transport",
