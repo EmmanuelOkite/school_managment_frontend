@@ -83,7 +83,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <BookOpen size={16} />, label: "Timetable", key: "timetable",
-    children: ["Class Timetable", "Teacher Timetable", "Exam Timetable"],
+    children: ["Class Timetable", "Exam Timetable"],
   },
   {
     icon: <DollarSign size={16} />, label: "Finance", key: "finance",
