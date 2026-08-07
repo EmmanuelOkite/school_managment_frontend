@@ -67,7 +67,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <Users size={16} />, label: "Parents", key: "parents",
-    children: ["Add Parent", "Manage Parents", "Parent Communication"],
+    children: ["Add Parent", "Manage Parents"],
   },
   {
     icon: <School size={16} />, label: "Academic Management", key: "academics",
