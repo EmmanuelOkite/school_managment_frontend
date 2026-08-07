@@ -115,7 +115,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <Settings size={16} />, label: "Settings", key: "settings",
-    children: ["School Information", "Academic Settings", "System Preferences", "Backup & Restore"],
+    children: ["School Information", "Academic Settings", "System Preferences"],
   },
   {
     icon: <Shield size={16} />, label: "Security", key: "security",
