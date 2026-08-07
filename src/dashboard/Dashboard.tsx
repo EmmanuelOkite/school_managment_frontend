@@ -103,7 +103,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <Megaphone size={16} />, label: "Communication", key: "communication",
-    children: ["Announcements", "SMS Notifications", "Email Notifications", "Notice Board"],
+    children: ["Announcements", "SMS Notifications", "Notice Board"],
   },
   {
     icon: <BarChart2 size={16} />, label: "Reports", key: "reports",
