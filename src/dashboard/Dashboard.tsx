@@ -99,7 +99,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <Heart size={16} />, label: "Health", key: "health",
-    children: ["Medical Records", "Sick Bay Visits", "Health Reports"],
+    children: ["Medical Records", "Sick Bay Visits"],
   },
   {
     icon: <Megaphone size={16} />, label: "Communication", key: "communication",
