@@ -19,6 +19,7 @@ interface FormData {
   gender: string;
   nationality: string;
   dateOfBirth: string;
+  parentName: string;
 }
 
 interface FieldError {
@@ -284,6 +285,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
     gender: "",
     nationality: "",
     dateOfBirth: "",
+    parentName: "",
   });
 
   const [errors, setErrors] = useState<FieldError>({});
@@ -306,6 +308,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
     if (!form.gender) e.gender = "Please select a gender";
     if (!form.nationality.trim()) e.nationality = "Nationality is required";
     if (!form.dateOfBirth) e.dateOfBirth = "Date of birth is required";
+    if (!form.parentName.trim()) e.parentName = "Parent name is required";
     if (form.level === "A Level" && form.subjectCombination.length === 0)
       e.subjectCombination = "Select at least one subject for A Level";
     setErrors(e);
@@ -327,6 +330,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
         gender: form.gender,
         nationality: form.nationality,
         dateOfBirth: form.dateOfBirth,
+        parentName: form.parentName,
       });
 
       alert("Student saved successfully!");
@@ -340,7 +344,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
 };
 
   const handleReset = () => {
-    setForm({ studentId: "S-2026-000123", level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "" });
+    setForm({ studentId: "S-2026-000123", level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "", parentName: "" });
     setErrors({});
     setTouched({});
   };
@@ -474,6 +478,18 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
                 <InputField placeholder="YYYY-MM-DD" value={form.dateOfBirth} onChange={(v) => set("dateOfBirth", v)} icon={<Calendar size={14} />} type="date" error={errors.dateOfBirth} />
                 {errors.dateOfBirth && <ErrorMsg msg={errors.dateOfBirth} />}
               </div>
+            </div>
+
+            <div onBlur={() => touch("parentName")}>
+              <Label text="Parent Name" required />
+              <InputField
+                placeholder="Enter parent/guardian's full name"
+                value={form.parentName}
+                onChange={(v) => set("parentName", v)}
+                icon={<User size={14} />}
+                error={errors.parentName}
+              />
+              {errors.parentName && <ErrorMsg msg={errors.parentName} />}
             </div>
           </div>
 
