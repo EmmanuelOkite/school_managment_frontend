@@ -67,7 +67,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <Users size={16} />, label: "Parents", key: "parents",
-    children: [ "Manage Parents"],
+    children: [],
   },
   {
     icon: <School size={16} />, label: "Academic Management", key: "academics",
@@ -129,6 +129,7 @@ const ROUTES: Record<string, string> = {
   "Manage Students": "/students",
   "Student Attendance": "/attendance/students",
   "Announcements": "/communication/announcements/create",
+  "Parents": "/parents",
   "Add Teacher": "/teachers/add",
   "Manage Teachers": "/teachers",
   "Add Parent": "/parents/add",
@@ -285,11 +286,13 @@ export default function Dashboard() {
         <nav style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
           {SIDEBAR_ITEMS.map((item: SidebarItem) => (
             <div key={item.key}>
-              <button onClick={() => toggle(item.key)}
+              <button onClick={() => item.children.length === 0 ? handleChildClick(item.label) : toggle(item.key)}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", gap: 10,
                   padding: "9px 16px", background: "none", border: "none", cursor: "pointer",
-                  color: openKeys[item.key] ? "#60a5fa" : "#94a3b8",
+                  color: item.children.length === 0
+                    ? (activeItem === item.label ? "#60a5fa" : "#94a3b8")
+                    : (openKeys[item.key] ? "#60a5fa" : "#94a3b8"),
                   fontSize: 13, fontWeight: 500, textAlign: "left",
                   transition: "color 0.15s",
                   borderRadius: 0,
@@ -305,13 +308,15 @@ export default function Dashboard() {
                         {item.badge}
                       </span>
                     )}
-                    <span style={{ display: "flex", alignItems: "center", color: "#475569" }}>
-                      {openKeys[item.key] ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                    </span>
+                    {item.children.length > 0 && (
+                      <span style={{ display: "flex", alignItems: "center", color: "#475569" }}>
+                        {openKeys[item.key] ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </span>
+                    )}
                   </>
                 )}
               </button>
-              {!sidebarCollapsed && openKeys[item.key] && (
+              {!sidebarCollapsed && item.children.length > 0 && openKeys[item.key] && (
                 <div style={{ background: "#080f1a" }}>
                   {item.children.map((child: string) => (
                     <button
