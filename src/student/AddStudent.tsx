@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { studentService } from '../api/studentService';
 import {
-  User, Hash, Search, Globe, Calendar,
+  User, Hash, Search, Globe, Calendar, MapPin,
   ChevronDown, X, RotateCcw, Info, AlertCircle,
 } from "lucide-react";
 
@@ -20,6 +20,7 @@ interface FormData {
   nationality: string;
   dateOfBirth: string;
   parentName: string;
+  address: string;
 }
 
 interface FieldError {
@@ -286,6 +287,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
     nationality: "",
     dateOfBirth: "",
     parentName: "",
+    address: "",
   });
 
   const [errors, setErrors] = useState<FieldError>({});
@@ -309,6 +311,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
     if (!form.nationality.trim()) e.nationality = "Nationality is required";
     if (!form.dateOfBirth) e.dateOfBirth = "Date of birth is required";
     if (!form.parentName.trim()) e.parentName = "Parent name is required";
+    if (!form.address.trim()) e.address = "Address is required";
     if (form.level === "A Level" && form.subjectCombination.length === 0)
       e.subjectCombination = "Select at least one subject for A Level";
     setErrors(e);
@@ -331,6 +334,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
         nationality: form.nationality,
         dateOfBirth: form.dateOfBirth,
         parentName: form.parentName,
+        address: form.address,
       });
 
       alert("Student saved successfully!");
@@ -344,7 +348,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
 };
 
   const handleReset = () => {
-    setForm({ studentId: "S-2026-000123", level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "", parentName: "" });
+    setForm({ studentId: "S-2026-000123", level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "", parentName: "", address: "" });
     setErrors({});
     setTouched({});
   };
@@ -480,16 +484,29 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
               </div>
             </div>
 
-            <div onBlur={() => touch("parentName")}>
-              <Label text="Parent Name" required />
-              <InputField
-                placeholder="Enter parent/guardian's full name"
-                value={form.parentName}
-                onChange={(v) => set("parentName", v)}
-                icon={<User size={14} />}
-                error={errors.parentName}
-              />
-              {errors.parentName && <ErrorMsg msg={errors.parentName} />}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div onBlur={() => touch("parentName")}>
+                <Label text="Parent Name" required />
+                <InputField
+                  placeholder="Enter parent/guardian's full name"
+                  value={form.parentName}
+                  onChange={(v) => set("parentName", v)}
+                  icon={<User size={14} />}
+                  error={errors.parentName}
+                />
+                {errors.parentName && <ErrorMsg msg={errors.parentName} />}
+              </div>
+              <div onBlur={() => touch("address")}>
+                <Label text="Address" required />
+                <InputField
+                  placeholder="Enter home address"
+                  value={form.address}
+                  onChange={(v) => set("address", v)}
+                  icon={<MapPin size={14} />}
+                  error={errors.address}
+                />
+                {errors.address && <ErrorMsg msg={errors.address} />}
+              </div>
             </div>
           </div>
 
