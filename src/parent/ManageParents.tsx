@@ -40,6 +40,14 @@ function EditParentDialog({
   const [address, setAddress] = useState(row.address === "—" ? "" : row.address);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.stopPropagation(); onClose(); }
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [onClose]);
+
   const handleSave = async () => {
     if (!parentName.trim()) return;
     setSaving(true);

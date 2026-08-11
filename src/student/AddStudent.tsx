@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { studentService } from '../api/studentService';
 import {
   User, Hash, Search, Globe, Calendar, MapPin,
@@ -142,6 +142,15 @@ function SubjectSelect({
   selected: string[]; onChange: (v: string[]) => void; error?: string;
 }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.stopPropagation(); setOpen(false); }
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [open]);
 
   const toggle = (subject: string) => {
     if (selected.includes(subject)) {
