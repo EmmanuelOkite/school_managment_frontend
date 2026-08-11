@@ -132,6 +132,7 @@ const ROUTES: Record<string, string> = {
   "Parents": "/parents",
   "Add Teacher": "/teachers/add",
   "Manage Teachers": "/teachers",
+  "Teacher Attendance": "/attendance/teachers",
   "Add Parent": "/parents/add",
   "Manage Parents": "/parents",
   "Create Exams": "/exams/create",
