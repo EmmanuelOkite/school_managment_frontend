@@ -63,7 +63,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <UserCheck size={16} />, label: "Teachers", key: "teachers",
-    children: ["Add Teacher", "Manage Teachers", "Teacher Attendance", "Teacher Timetable"],
+    children: ["Add Teacher", "Manage Teachers", "Teacher Attendance"],
   },
   {
     icon: <Users size={16} />, label: "Parents", key: "parents",
