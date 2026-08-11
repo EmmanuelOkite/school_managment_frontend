@@ -6,6 +6,7 @@ import StudentAttendance from './student/StudentAttendance';
 import CreateAnnouncement from './announcement/CreateAnnouncement';
 import ManageParents from './parent/ManageParents';
 import AddTeacher from './teacher/AddTeacher';
+import ManageTeachers from './teacher/ManageTeachers';
 import Register from './auth/Register';
 import Login from './auth/Login';
 import ResetPassword from './auth/ResetPassword';
@@ -25,6 +26,7 @@ function AppRoutes() {
         <Route path="/communication/announcements/create" element={<CreateAnnouncement />} />
         <Route path="/parents" element={<ManageParents />} />
         <Route path="/teachers/add" element={<AddTeacher />} />
+        <Route path="/teachers" element={<ManageTeachers />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -38,6 +40,7 @@ function AppRoutes() {
           <Route path="/communication/announcements/create" element={<RouteModal maxWidth={940}><CreateAnnouncement embedded /></RouteModal>} />
           <Route path="/parents" element={<RouteModal maxWidth={1100}><ManageParents embedded /></RouteModal>} />
           <Route path="/teachers/add" element={<RouteModal maxWidth={960}><AddTeacher embedded /></RouteModal>} />
+          <Route path="/teachers" element={<RouteModal maxWidth={1400}><ManageTeachers embedded /></RouteModal>} />
         </Routes>
       )}
     </>
