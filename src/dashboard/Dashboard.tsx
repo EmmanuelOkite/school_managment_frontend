@@ -79,7 +79,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <FileText size={16} />, label: "Examinations", key: "examinations",
-    children: ["Create Exams", "Enter Marks", "Grade Management", "Report Cards", "Results Analysis"],
+    children: ["Create Exams", "Enter Marks", "Grade Management", "Report Cards"],
   },
   {
     icon: <BookOpen size={16} />, label: "Timetable", key: "timetable",
