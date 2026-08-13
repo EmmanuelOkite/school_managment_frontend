@@ -482,7 +482,7 @@ export default function Dashboard() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: "#0f172a" }}>Examinations Overview</p>
                 <button
-                  onClick={() => navigate("/exams/create")}
+                  onClick={() => navigate("/exams/create", { state: { background: location } })}
                   style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", padding: "6px 14px", borderRadius: 7, fontSize: 12, fontWeight: 600, color: "#334155", cursor: "pointer" }}>
                   Manage Exams
                 </button>
