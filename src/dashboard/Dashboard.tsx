@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { studentService } from "../api/studentService";
+import { teacherService } from "../api/teacherService";
+import { attendanceService } from "../api/attendanceService";
 import {
   LayoutDashboard, GraduationCap, Users, UserCheck, School,
   CalendarCheck, FileText, BookOpen, DollarSign, Library,
   Bus, Heart, Megaphone, BarChart2, UserCog, Settings,
-  Shield, LogOut, ChevronDown, ChevronUp, Bell, Search,
+  Shield, LogOut, ChevronDown, ChevronUp, Bell, Search, Calendar,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -15,12 +18,12 @@ interface SidebarItem {
   children: string[];
 }
 
-interface StatCard {
+interface StatCardDisplay {
+  key: string;
   label: string;
   value: string;
-  change: string;
-  up: boolean;
-  icon: string;
+  caption?: string;
+  icon: React.ReactNode;
   color: string;
 }
 
@@ -148,12 +151,22 @@ const ROUTES: Record<string, string> = {
   "Exam Timetable": "/timetable/exam",
 };
 
-const statCards: StatCard[] = [
-  { label: "Total Students", value: "1,248", change: "+12.5% vs last month", up: true, icon: "👨‍🎓", color: "#3b82f6" },
-  { label: "Staff Members", value: "94", change: "+3.1% vs last month", up: true, icon: "👨‍🏫", color: "#10b981" },
-  { label: "Daily Attendance", value: "91.4%", change: "-0.4% vs last month", up: false, icon: "📅", color: "#f59e0b" },
-  { label: "Pending Fees", value: "$12,450", change: "-8.2% vs last month", up: false, icon: "💰", color: "#ef4444" },
-];
+const PENDING_FEES_DISPLAY = "$12,450";
+
+function todayIso(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function currentWeekRangeLabel(): string {
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sun ... 6 = Sat
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return `${fmt(monday)} – ${fmt(sunday)}`;
+}
 
 const recentActivities: Activity[] = [
   { user: "Sarah Jenkins", action: "Added new student: Michael Chen", time: "10 mins ago", tag: "system" },
@@ -254,6 +267,117 @@ export default function Dashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [weekRangeLabel, setWeekRangeLabel] = useState<string>(() => currentWeekRangeLabel());
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const scheduleNextUpdate = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+      timeoutId = setTimeout(() => {
+        setWeekRangeLabel(currentWeekRangeLabel());
+        scheduleNextUpdate();
+      }, nextMidnight.getTime() - now.getTime());
+    };
+    scheduleNextUpdate();
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  const [studentsCount, setStudentsCount] = useState<number | null>(null);
+  const [studentsError, setStudentsError] = useState(false);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
+  const [staffCount, setStaffCount] = useState<number | null>(null);
+  const [staffError, setStaffError] = useState(false);
+  const [loadingStaff, setLoadingStaff] = useState(true);
+
+  const [attendancePct, setAttendancePct] = useState<number | null>(null);
+  const [attendanceNote, setAttendanceNote] = useState<string | null>(null);
+  const [attendanceError, setAttendanceError] = useState(false);
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAttendance = async (classNames: string[]) => {
+      if (classNames.length === 0) {
+        if (!cancelled) { setAttendanceNote("No classes found yet."); setLoadingAttendance(false); }
+        return;
+      }
+      try {
+        const results = await Promise.allSettled(
+          classNames.map((classId) => attendanceService.getForDate({ date: todayIso(), classId }))
+        );
+        let present = 0, marked = 0;
+        results.forEach((result) => {
+          if (result.status !== "fulfilled") return;
+          const raw = result.value.data;
+          const records = Array.isArray(raw) ? raw : raw?.records ?? raw?.data ?? [];
+          records.forEach((rec: any) => {
+            const status = String(rec.status ?? "").toLowerCase();
+            if (!status || status === "unmarked") return;
+            marked += 1;
+            if (status === "present") present += 1;
+          });
+        });
+        if (cancelled) return;
+        if (marked === 0) setAttendanceNote("No attendance marked yet today");
+        else setAttendancePct((present / marked) * 100);
+      } catch {
+        if (!cancelled) setAttendanceError(true);
+      } finally {
+        if (!cancelled) setLoadingAttendance(false);
+      }
+    };
+
+    studentService.getAll()
+      .then((res) => {
+        const raw = Array.isArray(res.data) ? res.data : res.data?.students ?? res.data?.data ?? [];
+        if (cancelled) return;
+        setStudentsCount(raw.length);
+        const classNames: string[] = Array.from(
+          new Set(raw.map((s: any) => s.class ?? s.className ?? s.level).filter(Boolean))
+        );
+        loadAttendance(classNames);
+      })
+      .catch(() => { if (!cancelled) { setStudentsError(true); setLoadingAttendance(false); } })
+      .finally(() => { if (!cancelled) setLoadingStudents(false); });
+
+    teacherService.getAll()
+      .then((res) => {
+        const raw = Array.isArray(res.data) ? res.data : res.data?.teachers ?? res.data?.data ?? [];
+        if (!cancelled) setStaffCount(raw.length);
+      })
+      .catch(() => { if (!cancelled) setStaffError(true); })
+      .finally(() => { if (!cancelled) setLoadingStaff(false); });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const statCards: StatCardDisplay[] = [
+    {
+      key: "students", label: "Total Students", color: "#3b82f6",
+      value: loadingStudents ? "…" : studentsError ? "—" : (studentsCount ?? 0).toLocaleString(),
+      icon: <GraduationCap size={20} color="#3b82f6" />,
+    },
+    {
+      key: "staff", label: "Staff Members", color: "#10b981",
+      value: loadingStaff ? "…" : staffError ? "—" : (staffCount ?? 0).toLocaleString(),
+      icon: <UserCheck size={20} color="#10b981" />,
+    },
+    {
+      key: "attendance", label: "Daily Attendance", color: "#f59e0b",
+      value: loadingAttendance ? "…" : attendanceError ? "—" : attendancePct != null ? `${attendancePct.toFixed(1)}%` : "N/A",
+      caption: !loadingAttendance && !attendanceError && attendancePct == null ? attendanceNote ?? undefined : undefined,
+      icon: <CalendarCheck size={20} color="#f59e0b" />,
+    },
+    {
+      key: "fees", label: "Pending Fees", color: "#ef4444",
+      value: PENDING_FEES_DISPLAY,
+      icon: <DollarSign size={20} color="#ef4444" />,
+    },
+  ];
 
   const toggle = (key: string) => setOpenKeys((prev: Record<string, boolean>) => ({ ...prev, [key]: !prev[key] }));
 
@@ -401,7 +525,9 @@ export default function Dashboard() {
               <p style={{ fontSize: 13, color: "#64748b", margin: "4px 0 0" }}>Here is a detailed look at what's happening in school as of today.</p>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 13, color: "#64748b", background: "#f1f5f9", padding: "6px 12px", borderRadius: 8 }}>📅 Oct 23, 2023 – Oct 29, 2023</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#64748b", background: "#f1f5f9", padding: "6px 12px", borderRadius: 8 }}>
+                <Calendar size={14} /> {weekRangeLabel}
+              </span>
               <button style={{ background: "linear-gradient(135deg,#3b82f6,#6366f1)", color: "#fff", border: "none", padding: "8px 16px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                 ↗ Export Overview
               </button>
@@ -410,15 +536,15 @@ export default function Dashboard() {
 
           {/* Stat cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
-            {statCards.map((c: StatCard) => (
-              <div key={c.label} style={{ background: "#fff", borderRadius: 12, padding: "18px 20px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            {statCards.map((c) => (
+              <div key={c.key} style={{ background: "#fff", borderRadius: 12, padding: "18px 20px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
                     <p style={{ margin: 0, fontSize: 12, color: "#64748b", fontWeight: 500 }}>{c.label}</p>
                     <p style={{ margin: "6px 0 0", fontSize: 24, fontWeight: 700, color: "#0f172a" }}>{c.value}</p>
-                    <p style={{ margin: "6px 0 0", fontSize: 11.5, color: c.up ? "#10b981" : "#ef4444", fontWeight: 500 }}>{c.change}</p>
+                    {c.caption && <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "#94a3b8", fontWeight: 500 }}>{c.caption}</p>}
                   </div>
-                  <div style={{ width: 40, height: 40, borderRadius: 10, background: c.color + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{c.icon}</div>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: c.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{c.icon}</div>
                 </div>
               </div>
             ))}
