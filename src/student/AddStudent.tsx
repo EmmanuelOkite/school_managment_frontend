@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { studentService } from '../api/studentService';
 import {
-  User, Hash, Search, Globe, Calendar, MapPin,
-  ChevronDown, X, RotateCcw, Info, AlertCircle,
+  User, Search, Globe, Calendar, MapPin,
+  ChevronDown, X, RotateCcw, AlertCircle, CheckCircle2,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface FormData {
-  studentId: string;
   level: string;
   surname: string;
   firstName: string;
@@ -69,6 +68,42 @@ function ErrorMsg({ msg }: { msg: string }) {
     <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 5 }}>
       <AlertCircle size={13} color="#ef4444" />
       <span style={{ fontSize: 12, color: "#ef4444" }}>{msg}</span>
+    </div>
+  );
+}
+
+function SuccessToast({ message, onClose }: { message: string; onClose: () => void }) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <div
+      role="status"
+      style={{
+        position: "fixed", top: 24, right: 24, zIndex: 2000,
+        display: "flex", alignItems: "flex-start", gap: 10,
+        background: "#fff", border: "1px solid #bbf7d0", borderRadius: 12,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)", padding: "14px 16px",
+        minWidth: 280, maxWidth: 360,
+        transform: visible ? "translateY(0)" : "translateY(-12px)",
+        opacity: visible ? 1 : 0,
+        transition: "transform 0.25s ease, opacity 0.25s ease",
+      }}
+    >
+      <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <CheckCircle2 size={17} color="#10b981" />
+      </div>
+      <div style={{ flex: 1 }}>
+        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>Success</p>
+        <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "#64748b" }}>{message}</p>
+      </div>
+      <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", padding: 2, flexShrink: 0 }}>
+        <X size={15} />
+      </button>
     </div>
   );
 }
@@ -284,7 +319,6 @@ function ClassSearch({
 
 export default function AddStudent({ embedded = false }: { embedded?: boolean }) {
   const [form, setForm] = useState<FormData>({
-    studentId: "S-2026-000123",
     level: "",
     surname: "",
     firstName: "",
@@ -301,6 +335,16 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
 
   const [errors, setErrors] = useState<FieldError>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const successTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (successTimeout.current) clearTimeout(successTimeout.current); }, []);
+
+  const showSuccess = (message: string) => {
+    if (successTimeout.current) clearTimeout(successTimeout.current);
+    setSuccessMessage(message);
+    successTimeout.current = setTimeout(() => setSuccessMessage(null), 3500);
+  };
 
   const set = (field: keyof FormData, value: string | string[]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -331,7 +375,6 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
   if (validate()) {
     try {
       await studentService.create({
-        studentId: form.studentId,
         surname: form.surname,
         firstName: form.firstName,
         otherNames: form.otherNames,
@@ -346,7 +389,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
         address: form.address,
       });
 
-      alert("Student saved successfully!");
+      showSuccess("Student saved successfully!");
 
       // Optional: Reset the form after successful save
       handleReset();
@@ -357,7 +400,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
 };
 
   const handleReset = () => {
-    setForm({ studentId: "S-2026-000123", level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "", parentName: "", address: "" });
+    setForm({ level: "", surname: "", firstName: "", otherNames: "", classId: "", subjectCombination: [], age: "", gender: "", nationality: "", dateOfBirth: "", parentName: "", address: "" });
     setErrors({});
     setTouched({});
   };
@@ -366,6 +409,7 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
 
   return (
     <div style={{ minHeight: embedded ? undefined : "100vh", background: embedded ? "transparent" : "#f1f5f9", padding: embedded ? "20px" : "32px 24px", fontFamily: "'Inter', 'Segoe UI', sans-serif", textAlign: "left" as const }}>
+      {successMessage && <SuccessToast message={successMessage} onClose={() => setSuccessMessage(null)} />}
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
 
         {/* ── Page Header ───────────────────────────────────────────────── */}
@@ -383,14 +427,9 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", overflow: "hidden" }}>
 
           {/* Card header */}
-          <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#3b82f6" }}>Student Profile Information</p>
-              <p style={{ margin: "3px 0 0", fontSize: 12.5, color: "#94a3b8" }}>Fill in all details to generate a student profile.</p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 20, padding: "5px 12px", fontSize: 12, color: "#3b82f6", fontWeight: 600 }}>
-              <Info size={13} /> ID Generation Active
-            </div>
+          <div style={{ padding: "20px 28px", borderBottom: "1px solid #f1f5f9" }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 16, color: "#3b82f6" }}>Student Profile Information</p>
+            <p style={{ margin: "3px 0 0", fontSize: 12.5, color: "#94a3b8" }}>Fill in all details to generate a student profile.</p>
           </div>
 
           <div style={{ padding: "28px" }}>
@@ -398,13 +437,6 @@ export default function AddStudent({ embedded = false }: { embedded?: boolean })
             {/* ── ACADEMIC IDENTITY ─────────────────────────────────────── */}
             <SectionHeader title="Academic Identity" />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 28 }}>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <Label text="Student ID" />
-                  <span style={{ fontSize: 11.5, color: "#94a3b8", fontStyle: "italic" }}></span>
-                </div>
-                <InputField placeholder="Auto-generated" value={form.studentId} onChange={() => {}} icon={<Hash size={14} />} readOnly />
-              </div>
               <div onBlur={() => touch("level")}>
                 <Label text="Level" required />
                 <SelectField placeholder="Select level" value={form.level} onChange={(v) => set("level", v)} options={LEVEL_OPTIONS} error={errors.level} />

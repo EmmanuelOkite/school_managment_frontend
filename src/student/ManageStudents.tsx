@@ -11,7 +11,6 @@ import {
 interface StudentRow {
   id: string;
   admissionNo: string;
-  studentIdLabel: string;
   name: string;
   gender: string;
   age: string;
@@ -43,7 +42,6 @@ function normalizeStudent(raw: any): StudentRow {
   return {
     id: String(raw._id ?? raw.id ?? raw.studentId ?? name),
     admissionNo: String(raw.admissionNo ?? raw.admissionNumber ?? raw.studentId ?? "—"),
-    studentIdLabel: String(raw.studentId ?? raw._id ?? raw.id ?? "—"),
     name,
     gender: raw.gender ?? "—",
     age: raw.age != null && raw.age !== "" ? String(raw.age) : "—",
@@ -289,7 +287,6 @@ export default function ManageStudents({ embedded = false }: { embedded?: boolea
                       </td>
                       <td style={{ padding: "14px 10px" }}>
                         <div style={{ fontWeight: 600, color: "#0f172a" }}>{s.name}</div>
-                        <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>ID: {s.studentIdLabel}</div>
                       </td>
                       <td style={{ padding: "14px 10px", color: "#334155" }}>
                         <div>{s.gender}</div>
