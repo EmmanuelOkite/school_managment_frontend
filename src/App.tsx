@@ -11,6 +11,8 @@ import TeacherAttendance from './teacher/TeacherAttendance';
 import CreateExam from './exam/CreateExam';
 import EnterMarks from './exam/EnterMarks';
 import GradeManagement from './exam/GradeManagement';
+import AddClass from './class/AddClass';
+import ManageClasses from './class/ManageClasses';
 import Register from './auth/Register';
 import Login from './auth/Login';
 import ResetPassword from './auth/ResetPassword';
@@ -35,6 +37,8 @@ function AppRoutes() {
         <Route path="/exams/create" element={<CreateExam />} />
         <Route path="/exams/marks" element={<EnterMarks />} />
         <Route path="/exams/grading" element={<GradeManagement />} />
+        <Route path="/classes" element={<ManageClasses />} />
+        <Route path="/classes/add" element={<AddClass />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -53,6 +57,8 @@ function AppRoutes() {
           <Route path="/exams/create" element={<RouteModal maxWidth={960}><CreateExam embedded /></RouteModal>} />
           <Route path="/exams/marks" element={<RouteModal maxWidth={1400}><EnterMarks embedded /></RouteModal>} />
           <Route path="/exams/grading" element={<RouteModal maxWidth={1400}><GradeManagement embedded /></RouteModal>} />
+          <Route path="/classes" element={<RouteModal maxWidth={1400}><ManageClasses embedded /></RouteModal>} />
+          <Route path="/classes/add" element={<RouteModal maxWidth={960}><AddClass embedded /></RouteModal>} />
         </Routes>
       )}
     </>
