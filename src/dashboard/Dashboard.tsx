@@ -74,7 +74,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   },
   {
     icon: <School size={16} />, label: "Academic Management", key: "academics",
-    children: ["Classes", "Streams/Sections", "Subjects", "Academic Years", "Terms/Semesters"],
+    children: ["Add Classes", "Manage Classes", "Classes/Streams", "Academic Years", "Terms/Semesters"],
   },
   {
     icon: <CalendarCheck size={16} />, label: "Attendance", key: "attendance",
