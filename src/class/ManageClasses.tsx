@@ -7,7 +7,7 @@ import { teacherService } from "../api/teacherService";
 import {
   Search, ChevronDown, Plus, Trash2, Pencil, MoreVertical, Users, AlertCircle,
   ArrowLeft, Power, Save, X, Layers, BookOpen, GraduationCap, Info,
-  ArrowRightLeft, TrendingUp, Eye,
+  ArrowRightLeft, TrendingUp, Eye, Calendar,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -30,8 +30,8 @@ interface ClassRow {
   academicYear: string;
   term: string;
   description: string;
-  classTeacherId: string;
-  assistantClassTeacherId: string;
+  classTeacher: string;
+  assistantClassTeacher: string;
   maxStudents: number;
   status: "Active" | "Inactive";
   subjects: SubjectRow[];
@@ -44,8 +44,8 @@ interface ClassDraft {
   academicYear: string;
   term: string;
   description: string;
-  classTeacherId: string;
-  assistantClassTeacherId: string;
+  classTeacher: string;
+  assistantClassTeacher: string;
   maxStudents: string;
   status: "Active" | "Inactive";
 }
@@ -75,14 +75,15 @@ interface FieldError { [key: string]: string; }
 
 // ── Options ──────────────────────────────────────────────────────────────────
 
-const LEVEL_OPTIONS = ["Primary", "O-Level", "A-Level"];
+const CLASS_NAME_OPTIONS = ["Senior One", "Senior Two", "Senior Three", "Senior Four", "Senior Five", "Senior Six"];
+const LEVEL_OPTIONS = ["O-Level", "A-Level"];
 const TERM_OPTIONS = ["Term 1", "Term 2", "Term 3"];
 const STATUS_OPTIONS: ("Active" | "Inactive")[] = ["Active", "Inactive"];
 const ROWS_PER_PAGE = 10;
 
-function academicYearOptions(): string[] {
+function futureAcademicYearOptions(): string[] {
   const y = new Date().getFullYear();
-  return [String(y - 1), String(y), String(y + 1)];
+  return Array.from({ length: 6 }, (_, i) => String(y + i));
 }
 
 // ── Normalizers ──────────────────────────────────────────────────────────────
@@ -112,8 +113,8 @@ function normalizeClass(raw: any): ClassRow {
     academicYear: String(raw.academicYear ?? ""),
     term: raw.term ?? "",
     description: raw.description ?? "",
-    classTeacherId: String(raw.classTeacherId ?? raw.classTeacher?._id ?? raw.classTeacher ?? ""),
-    assistantClassTeacherId: String(raw.assistantClassTeacherId ?? raw.assistantClassTeacher?._id ?? raw.assistantClassTeacher ?? ""),
+    classTeacher: raw.classTeacher ?? "",
+    assistantClassTeacher: raw.assistantClassTeacher ?? "",
     maxStudents: Number(raw.maxStudents) || 0,
     status: raw.status === "Inactive" ? "Inactive" : "Active",
     subjects,
@@ -243,24 +244,21 @@ function SelectField({
   );
 }
 
-function PersonSelect({
-  placeholder, value, onChange, options, error, disabled = false,
-}: { placeholder: string; value: string; onChange: (id: string) => void; options: Person[]; error?: string; disabled?: boolean }) {
+function YearSelect({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) {
   return (
     <div style={{ position: "relative" }}>
+      <Calendar size={13} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
       <select
         value={value}
-        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         style={{
-          width: "100%", padding: "10px 34px 10px 14px", borderRadius: 8,
-          border: `1.5px solid ${error ? "#ef4444" : "#e2e8f0"}`,
-          fontSize: 13.5, color: value ? "#0f172a" : "#94a3b8", background: disabled ? "#f8fafc" : "#fff",
-          outline: "none", appearance: "none" as const, cursor: disabled ? "not-allowed" : "pointer", boxSizing: "border-box" as const,
+          width: "100%", padding: "10px 34px 10px 34px", borderRadius: 8, border: "1.5px solid #e2e8f0",
+          fontSize: 13.5, color: value ? "#0f172a" : "#94a3b8", background: "#fff",
+          outline: "none", appearance: "none" as const, cursor: "pointer", boxSizing: "border-box" as const,
         }}
       >
-        <option value="" disabled>{placeholder}</option>
-        {options.map((opt) => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+        <option value="" disabled>Select year</option>
+        {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
       </select>
       <ChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
     </div>
@@ -453,7 +451,7 @@ function ClassDetail({
   // Overview
   const [draft, setDraft] = useState<ClassDraft>({
     name: cls.name, code: cls.code, educationLevel: cls.educationLevel, academicYear: cls.academicYear, term: cls.term,
-    description: cls.description, classTeacherId: cls.classTeacherId, assistantClassTeacherId: cls.assistantClassTeacherId,
+    description: cls.description, classTeacher: cls.classTeacher, assistantClassTeacher: cls.assistantClassTeacher,
     maxStudents: String(cls.maxStudents || ""), status: cls.status,
   });
   const [errors, setErrors] = useState<FieldError>({});
@@ -504,7 +502,7 @@ function ClassDetail({
     if (!draft.name.trim()) e.name = "Class name is required";
     if (!draft.code.trim()) e.code = "Class code is required";
     if (!draft.educationLevel) e.educationLevel = "Please select an education level";
-    if (!draft.classTeacherId) e.classTeacherId = "Please select a class teacher";
+    if (!draft.classTeacher.trim()) e.classTeacher = "Class teacher is required";
     if (!draft.maxStudents || Number(draft.maxStudents) <= 0) e.maxStudents = "Enter a valid maximum student count";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -517,11 +515,11 @@ function ClassDetail({
       const payload = {
         name: draft.name.trim(), code: draft.code.trim().toUpperCase(), educationLevel: draft.educationLevel,
         academicYear: draft.academicYear, term: draft.term, description: draft.description.trim(),
-        classTeacherId: draft.classTeacherId, assistantClassTeacherId: draft.assistantClassTeacherId || undefined,
+        classTeacher: draft.classTeacher.trim(), assistantClassTeacher: draft.assistantClassTeacher.trim() || undefined,
         maxStudents: Number(draft.maxStudents), status: draft.status,
       };
       await classService.update(cls.id, payload);
-      onClassUpdated({ ...cls, ...payload, assistantClassTeacherId: draft.assistantClassTeacherId, subjects: cls.subjects });
+      onClassUpdated({ ...cls, ...payload, assistantClassTeacher: draft.assistantClassTeacher.trim(), subjects: cls.subjects });
       alert("Class details saved.");
     } catch (err: any) {
       alert(err.response?.data?.message ?? "Failed to save class details.");
@@ -601,8 +599,6 @@ function ClassDetail({
     }
   };
 
-  const teacherName = (id: string) => teachers.find((t) => t.id === id)?.name ?? "Unassigned";
-
   const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: "overview", label: "Overview", icon: <Info size={13} /> },
     { key: "streams", label: "Streams", icon: <Layers size={13} /> },
@@ -623,7 +619,7 @@ function ClassDetail({
             <StatusPill status={cls.status} />
           </div>
           <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "#94a3b8" }}>
-            {cls.code} · {cls.educationLevel || "—"} · {cls.academicYear || "—"}{cls.term ? ` · ${cls.term}` : ""} · Class Teacher: {teacherName(cls.classTeacherId)}
+            {cls.code} · {cls.educationLevel || "—"} · {cls.academicYear || "—"}{cls.term ? ` · ${cls.term}` : ""} · Class Teacher: {cls.classTeacher || "Unassigned"}
           </p>
         </div>
         <button
@@ -660,7 +656,7 @@ function ClassDetail({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
             <div>
               <Label text="Class Name" required />
-              <InputField placeholder="e.g. Senior 1" value={draft.name} onChange={(v) => setField("name", v)} error={errors.name} />
+              <SelectField placeholder="Select class name" value={draft.name} onChange={(v) => setField("name", v)} options={CLASS_NAME_OPTIONS} error={errors.name} />
               {errors.name && <ErrorMsg msg={errors.name} />}
             </div>
             <div>
@@ -677,7 +673,7 @@ function ClassDetail({
             </div>
             <div>
               <Label text="Academic Year" />
-              <SelectField placeholder="Select year" value={draft.academicYear} onChange={(v) => setField("academicYear", v)} options={academicYearOptions()} />
+              <YearSelect value={draft.academicYear} onChange={(v) => setField("academicYear", v)} options={futureAcademicYearOptions()} />
             </div>
             <div>
               <Label text="Term" />
@@ -694,12 +690,12 @@ function ClassDetail({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
             <div>
               <Label text="Class Teacher" required />
-              <PersonSelect placeholder="Select class teacher" value={draft.classTeacherId} onChange={(v) => setField("classTeacherId", v)} options={teachers} error={errors.classTeacherId} />
-              {errors.classTeacherId && <ErrorMsg msg={errors.classTeacherId} />}
+              <InputField placeholder="Enter class teacher's name" value={draft.classTeacher} onChange={(v) => setField("classTeacher", v)} error={errors.classTeacher} />
+              {errors.classTeacher && <ErrorMsg msg={errors.classTeacher} />}
             </div>
             <div>
               <Label text="Assistant Class Teacher" />
-              <PersonSelect placeholder="Optional" value={draft.assistantClassTeacherId} onChange={(v) => setField("assistantClassTeacherId", v)} options={teachers} />
+              <InputField placeholder="Optional" value={draft.assistantClassTeacher} onChange={(v) => setField("assistantClassTeacher", v)} />
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18, marginBottom: 8 }}>
@@ -942,16 +938,16 @@ function TransferStudentModal({ student, onClose, onTransferred }: { student: St
   );
 }
 
-function AssignTeacherModal({ cls, teachers, onClose, onSaved }: { cls: ClassRow; teachers: Person[]; onClose: () => void; onSaved: (teacherId: string) => void }) {
-  const [teacherId, setTeacherId] = useState(cls.classTeacherId);
+function AssignTeacherModal({ cls, onClose, onSaved }: { cls: ClassRow; onClose: () => void; onSaved: (teacherName: string) => void }) {
+  const [teacherName, setTeacherName] = useState(cls.classTeacher);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!teacherId) return;
+    if (!teacherName.trim()) return;
     setSaving(true);
     try {
-      await classService.update(cls.id, { classTeacherId: teacherId });
-      onSaved(teacherId);
+      await classService.update(cls.id, { classTeacher: teacherName.trim() });
+      onSaved(teacherName.trim());
     } catch (err: any) {
       alert(err.response?.data?.message ?? "Failed to assign teacher.");
     } finally {
@@ -963,11 +959,11 @@ function AssignTeacherModal({ cls, teachers, onClose, onSaved }: { cls: ClassRow
     <ModalShell title={`Assign Teacher — ${cls.name}`} onClose={onClose} width={400}>
       <div style={{ marginBottom: 18 }}>
         <Label text="Class Teacher" required />
-        <PersonSelect placeholder="Select teacher" value={teacherId} onChange={setTeacherId} options={teachers} />
+        <InputField placeholder="Enter class teacher's name" value={teacherName} onChange={setTeacherName} />
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <button onClick={onClose} style={{ padding: "9px 18px", borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff", fontSize: 13, fontWeight: 600, color: "#334155", cursor: "pointer" }}>Cancel</button>
-        <button disabled={saving || !teacherId} onClick={handleSave} style={{ padding: "9px 20px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#3b82f6,#6366f1)", fontSize: 13, fontWeight: 600, color: "#fff", cursor: saving ? "not-allowed" : "pointer" }}>
+        <button disabled={saving || !teacherName.trim()} onClick={handleSave} style={{ padding: "9px 20px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#3b82f6,#6366f1)", fontSize: 13, fontWeight: 600, color: "#fff", cursor: saving ? "not-allowed" : "pointer" }}>
           {saving ? "Saving..." : "Assign"}
         </button>
       </div>
@@ -985,7 +981,6 @@ export default function ManageClasses({ embedded = false }: { embedded?: boolean
   const [classesError, setClassesError] = useState<string | null>(null);
 
   const [teachers, setTeachers] = useState<Person[]>([]);
-  const [loadingTeachers, setLoadingTeachers] = useState(true);
 
   const [students, setStudents] = useState<StudentInClass[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -1033,8 +1028,7 @@ export default function ManageClasses({ embedded = false }: { embedded?: boolean
         const raw = Array.isArray(res.data) ? res.data : res.data?.teachers ?? res.data?.data ?? [];
         setTeachers(raw.map(normalizeTeacher));
       })
-      .catch(() => { /* teacher names fall back to "Unassigned" below */ })
-      .finally(() => setLoadingTeachers(false));
+      .catch(() => { /* teacher names fall back to "Unassigned" below */ });
     studentService.getAll()
       .then((res) => {
         const raw = Array.isArray(res.data) ? res.data : res.data?.students ?? res.data?.data ?? [];
@@ -1044,12 +1038,11 @@ export default function ManageClasses({ embedded = false }: { embedded?: boolean
       .finally(() => setLoadingStudents(false));
   }, []);
 
-  const teacherName = (id: string) => teachers.find((t) => t.id === id)?.name ?? "Unassigned";
   const studentCountFor = (className: string) => students.filter((s) => s.className === className).length;
 
   const levelOptions = useMemo(() => ["All Levels", ...Array.from(new Set(classes.map((c) => c.educationLevel).filter(Boolean)))], [classes]);
   const yearOptions = useMemo(() => ["All Years", ...Array.from(new Set(classes.map((c) => c.academicYear).filter(Boolean)))], [classes]);
-  const teacherOptions = useMemo(() => ["All Teachers", ...Array.from(new Set(classes.map((c) => teacherName(c.classTeacherId)).filter((n) => n !== "Unassigned")))], [classes, teachers]);
+  const teacherOptions = useMemo(() => ["All Teachers", ...Array.from(new Set(classes.map((c) => c.classTeacher).filter(Boolean)))], [classes]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -1057,11 +1050,11 @@ export default function ManageClasses({ embedded = false }: { embedded?: boolean
       if (levelFilter !== "All Levels" && c.educationLevel !== levelFilter) return false;
       if (yearFilter !== "All Years" && c.academicYear !== yearFilter) return false;
       if (statusFilter !== "All Status" && c.status !== statusFilter) return false;
-      if (teacherFilter !== "All Teachers" && teacherName(c.classTeacherId) !== teacherFilter) return false;
+      if (teacherFilter !== "All Teachers" && c.classTeacher !== teacherFilter) return false;
       if (q && !c.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [classes, search, levelFilter, yearFilter, statusFilter, teacherFilter, teachers]);
+  }, [classes, search, levelFilter, yearFilter, statusFilter, teacherFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
   const currentPage = Math.min(page, totalPages);
@@ -1182,7 +1175,7 @@ export default function ManageClasses({ embedded = false }: { embedded?: boolean
                       <td style={{ padding: "13px 14px", fontWeight: 600, color: "#0f172a" }}>{c.name}</td>
                       <td style={{ padding: "13px 14px", color: "#3b82f6", fontWeight: 600 }}>{c.code}</td>
                       <td style={{ padding: "13px 14px", color: "#334155" }}>{c.educationLevel || "—"}</td>
-                      <td style={{ padding: "13px 14px", color: "#334155" }}>{loadingTeachers ? "…" : teacherName(c.classTeacherId)}</td>
+                      <td style={{ padding: "13px 14px", color: "#334155" }}>{c.classTeacher || "Unassigned"}</td>
                       <td style={{ padding: "13px 14px", color: "#334155" }}>{loadingStudents ? "…" : studentCountFor(c.name)}{c.maxStudents ? ` / ${c.maxStudents}` : ""}</td>
                       <td style={{ padding: "13px 14px", color: "#334155" }}>{streamCounts[c.id] ?? "…"}</td>
                       <td style={{ padding: "13px 14px", color: "#334155" }}>{c.academicYear || "—"}</td>
@@ -1213,10 +1206,9 @@ export default function ManageClasses({ embedded = false }: { embedded?: boolean
       {assignTeacherFor && (
         <AssignTeacherModal
           cls={assignTeacherFor}
-          teachers={teachers}
           onClose={() => setAssignTeacherFor(null)}
-          onSaved={(teacherId) => {
-            setClasses((prev) => prev.map((c) => c.id === assignTeacherFor.id ? { ...c, classTeacherId: teacherId } : c));
+          onSaved={(teacherName) => {
+            setClasses((prev) => prev.map((c) => c.id === assignTeacherFor.id ? { ...c, classTeacher: teacherName } : c));
             setAssignTeacherFor(null);
           }}
         />

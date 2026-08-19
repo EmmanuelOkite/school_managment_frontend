@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { classService } from "../api/classService";
-import { teacherService } from "../api/teacherService";
 import {
-  Hash, Users, ChevronDown, RotateCcw, AlertCircle, CheckCircle2, X,
+  Hash, Users, ChevronDown, Calendar, RotateCcw, AlertCircle, CheckCircle2, X,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -14,31 +13,24 @@ interface FormData {
   academicYear: string;
   term: string;
   description: string;
-  classTeacherId: string;
-  assistantClassTeacherId: string;
+  classTeacher: string;
+  assistantClassTeacher: string;
   maxStudents: string;
   status: "Active" | "Inactive";
 }
 
 interface FieldError { [key: string]: string; }
-interface Person { id: string; name: string; }
 
 // ── Options ──────────────────────────────────────────────────────────────────
 
-const LEVEL_OPTIONS = ["Primary", "O-Level", "A-Level"];
+const CLASS_NAME_OPTIONS = ["Senior One", "Senior Two", "Senior Three", "Senior Four", "Senior Five", "Senior Six"];
+const LEVEL_OPTIONS = ["O-Level", "A-Level"];
 const TERM_OPTIONS = ["Term 1", "Term 2", "Term 3"];
 const STATUS_OPTIONS: ("Active" | "Inactive")[] = ["Active", "Inactive"];
 
-function academicYearOptions(): string[] {
+function futureAcademicYearOptions(): string[] {
   const y = new Date().getFullYear();
-  return [String(y - 1), String(y), String(y + 1)];
-}
-
-function normalizeTeacher(raw: any): Person {
-  return {
-    id: String(raw._id ?? raw.id ?? raw.teacherId),
-    name: [raw.firstName, raw.middleName, raw.lastName].filter(Boolean).join(" ").trim() || raw.name || "Unnamed Teacher",
-  };
+  return Array.from({ length: 6 }, (_, i) => String(y + i));
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────
@@ -165,28 +157,25 @@ function SelectField({
   );
 }
 
-function PersonSelect({
-  placeholder, value, onChange, options, error, disabled = false,
-}: {
-  placeholder: string; value: string; onChange: (id: string) => void;
-  options: Person[]; error?: string; disabled?: boolean;
-}) {
+function YearSelect({
+  value, onChange, options, error,
+}: { value: string; onChange: (v: string) => void; options: string[]; error?: string }) {
   return (
     <div style={{ position: "relative" }}>
+      <Calendar size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
       <select
         value={value}
-        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         style={{
-          width: "100%", padding: "10px 36px 10px 14px",
+          width: "100%", padding: "10px 36px 10px 36px",
           borderRadius: 8, border: `1.5px solid ${error ? "#ef4444" : "#e2e8f0"}`,
           fontSize: 13.5, color: value ? "#0f172a" : "#94a3b8",
-          background: disabled ? "#f8fafc" : "#fff", outline: "none", appearance: "none" as const,
-          boxSizing: "border-box" as const, cursor: disabled ? "not-allowed" : "pointer",
+          background: "#fff", outline: "none", appearance: "none" as const,
+          boxSizing: "border-box" as const, cursor: "pointer",
         }}
       >
-        <option value="" disabled>{placeholder}</option>
-        {options.map((opt) => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+        <option value="" disabled>Select year</option>
+        {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
       </select>
       <ChevronDown size={15} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
     </div>
@@ -215,32 +204,14 @@ function TextArea({
 
 const INITIAL_FORM: FormData = {
   name: "", code: "", educationLevel: "", academicYear: String(new Date().getFullYear()), term: "",
-  description: "", classTeacherId: "", assistantClassTeacherId: "", maxStudents: "", status: "Active",
+  description: "", classTeacher: "", assistantClassTeacher: "", maxStudents: "", status: "Active",
 };
 
 export default function AddClass({ embedded = false }: { embedded?: boolean }) {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FieldError>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const [teachers, setTeachers] = useState<Person[]>([]);
-  const [loadingTeachers, setLoadingTeachers] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
-  const loadTeachers = () => {
-    setLoadingTeachers(true);
-    setLoadError(null);
-    teacherService.getAll()
-      .then((res) => {
-        const raw = Array.isArray(res.data) ? res.data : res.data?.teachers ?? res.data?.data ?? [];
-        setTeachers(raw.map(normalizeTeacher));
-      })
-      .catch((err) => setLoadError(err.response?.data?.message ?? "Failed to load teachers for this form."))
-      .finally(() => setLoadingTeachers(false));
-  };
-
-  useEffect(() => { loadTeachers(); }, []);
 
   const set = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -249,11 +220,11 @@ export default function AddClass({ embedded = false }: { embedded?: boolean }) {
 
   const validate = (): boolean => {
     const e: FieldError = {};
-    if (!form.name.trim()) e.name = "Class name is required";
+    if (!form.name.trim()) e.name = "Please select a class name";
     if (!form.code.trim()) e.code = "Class code is required";
     if (!form.educationLevel) e.educationLevel = "Please select an education level";
     if (!form.academicYear) e.academicYear = "Please select an academic year";
-    if (!form.classTeacherId) e.classTeacherId = "Please select a class teacher";
+    if (!form.classTeacher.trim()) e.classTeacher = "Class teacher is required";
     if (!form.maxStudents || Number(form.maxStudents) <= 0) e.maxStudents = "Enter a valid maximum student count";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -270,8 +241,8 @@ export default function AddClass({ embedded = false }: { embedded?: boolean }) {
         academicYear: form.academicYear,
         term: form.term,
         description: form.description.trim(),
-        classTeacherId: form.classTeacherId,
-        assistantClassTeacherId: form.assistantClassTeacherId || undefined,
+        classTeacher: form.classTeacher.trim(),
+        assistantClassTeacher: form.assistantClassTeacher.trim() || undefined,
         maxStudents: Number(form.maxStudents),
         status: form.status,
       });
@@ -306,13 +277,6 @@ export default function AddClass({ embedded = false }: { embedded?: boolean }) {
           </div>
         </div>
 
-        {loadError && (
-          <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 6, color: "#ef4444", fontSize: 12.5, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 14px" }}>
-            <AlertCircle size={14} /> {loadError}
-            <button onClick={loadTeachers} style={{ marginLeft: 6, background: "none", border: "none", color: "#3b82f6", fontWeight: 600, cursor: "pointer", fontSize: 12.5 }}>Retry</button>
-          </div>
-        )}
-
         {/* ── Form Card ─────────────────────────────────────────────────── */}
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", overflow: "hidden" }}>
 
@@ -328,12 +292,12 @@ export default function AddClass({ embedded = false }: { embedded?: boolean }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
               <div>
                 <Label text="Class Name" required />
-                <InputField placeholder="e.g. Senior 1, Senior 2, Primary 5" value={form.name} onChange={(v) => set("name", v)} error={errors.name} />
+                <SelectField placeholder="Select class name" value={form.name} onChange={(v) => set("name", v)} options={CLASS_NAME_OPTIONS} error={errors.name} />
                 {errors.name && <ErrorMsg msg={errors.name} />}
               </div>
               <div>
                 <Label text="Class Code" required />
-                <InputField placeholder="e.g. S1, S2, P5" value={form.code} onChange={(v) => set("code", v)} icon={<Hash size={14} />} error={errors.code} />
+                <InputField placeholder="e.g. S1, S2" value={form.code} onChange={(v) => set("code", v)} icon={<Hash size={14} />} error={errors.code} />
                 {errors.code && <ErrorMsg msg={errors.code} />}
               </div>
             </div>
@@ -345,7 +309,7 @@ export default function AddClass({ embedded = false }: { embedded?: boolean }) {
               </div>
               <div>
                 <Label text="Academic Year" required />
-                <SelectField placeholder="Select year" value={form.academicYear} onChange={(v) => set("academicYear", v)} options={academicYearOptions()} error={errors.academicYear} />
+                <YearSelect value={form.academicYear} onChange={(v) => set("academicYear", v)} options={futureAcademicYearOptions()} error={errors.academicYear} />
                 {errors.academicYear && <ErrorMsg msg={errors.academicYear} />}
               </div>
               <div>
@@ -365,25 +329,12 @@ export default function AddClass({ embedded = false }: { embedded?: boolean }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
               <div>
                 <Label text="Class Teacher" required />
-                <PersonSelect
-                  placeholder={loadingTeachers ? "Loading teachers..." : "Select class teacher"}
-                  value={form.classTeacherId}
-                  onChange={(v) => set("classTeacherId", v)}
-                  options={teachers}
-                  error={errors.classTeacherId}
-                  disabled={loadingTeachers}
-                />
-                {errors.classTeacherId && <ErrorMsg msg={errors.classTeacherId} />}
+                <InputField placeholder="Enter class teacher's name" value={form.classTeacher} onChange={(v) => set("classTeacher", v)} icon={<Users size={14} />} error={errors.classTeacher} />
+                {errors.classTeacher && <ErrorMsg msg={errors.classTeacher} />}
               </div>
               <div>
                 <Label text="Assistant Class Teacher" />
-                <PersonSelect
-                  placeholder={loadingTeachers ? "Loading teachers..." : "Optional"}
-                  value={form.assistantClassTeacherId}
-                  onChange={(v) => set("assistantClassTeacherId", v)}
-                  options={teachers}
-                  disabled={loadingTeachers}
-                />
+                <InputField placeholder="Optional" value={form.assistantClassTeacher} onChange={(v) => set("assistantClassTeacher", v)} icon={<Users size={14} />} />
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 8 }}>
